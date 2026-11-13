@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Knowledge Assessment Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: #f4f4f4; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
+        .report-container { 
+            background: #fff; 
+            padding: 30px 40px; 
+            border-radius: 8px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+            text-align: left; 
+            max-width: 800px; 
+            width: 100%; 
+            margin-bottom: 20px; 
+        }
+        /* 1. Стиль для h1 "Knowledge Assessment Report" изменен, чтобы соответствовать старому h2 */
+        h1 { 
+            color: #333; /* Цвет как у старого h2 */
+            text-align: center; 
+            margin-bottom: 25px; /* Отступ как у старого h2 */
+            font-family: Arial, sans-serif; /* Шрифт Arial, как у основного текста */
+            font-size: 22px; /* Размер как у старого h2 */
+            border-bottom: 1px solid #eee; /* Подчеркивание как у старого h2 */
+            padding-bottom: 10px; /* Отступ снизу до черты как у старого h2 */
+        }
+        /* Стиль для h2 (теперь используется для "Assessment Summary" и "Review Incorrect Answers") */
+        h2 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 20px; /* Уменьшен нижний отступ для подзаголовков */
+            font-size: 20px; /* Немного меньше основного заголовка */
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 10px;
+        }
+        .participant-details p, .summary-details p { 
+            font-size: 16px; 
+            margin: 8px 0; 
+            color: #333; 
+        }
+        .participant-details strong, .summary-details strong { 
+            min-width: 180px; 
+            display: inline-block; 
+        }
+        .score-section { 
+            text-align: center; 
+            margin: 25px 0; 
+        }
+        .score-percent { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #333333; 
+        }
+        .pass-fail-message { 
+            font-size: 22px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+        }
+        .passed { color: green; }
+        .failed { color: red; }
+        .action-buttons { 
+            text-align: center; 
+            margin-top: 30px; 
+            margin-bottom: 20px; /* Добавлен отступ снизу перед секцией неправильных ответов */
+        }
+        .action-buttons button {
+            padding: 10px 20px; 
+            margin: 5px 10px; /* Добавлен вертикальный отступ для случая переноса кнопок */
+            background-color: #007bff; 
+            color: white;
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .action-buttons button:hover { background-color: #0056b3; }
+        .action-buttons button.csv-button { background-color: #28a745; }
+        .action-buttons button.csv-button:hover { background-color: #218838; }
+        .error-message {text-align: center; color: red; font-size: 18px;}
+        hr { 
+            margin: 25px 0; 
+            border: 0; 
+            border-top: 1px solid #eee; 
+        }
+
+        /* 2. Стили для отображения неправильных ответов */
+        #incorrectAnswersSection {
+            margin-top: 30px; /* Отступ сверху для секции */
+        }
+        #incorrectAnswersSection h2 { /* Стиль для заголовка "Review Incorrect Answers" */
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px; 
+            border-bottom: none; /* Убрано подчеркивание для этого подзаголовка */
+            padding-bottom: 0;
+        }
+        .incorrect-question-item {
+            background-color: #fdf6f6; /* Очень светлый красный фон */
+            border: 1px solid #f5c6cb; /* Светло-красная рамка */
+            border-left: 5px solid #dc3545; /* Акцентная красная рамка слева */
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .incorrect-question-item p {
+            margin: 8px 0;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .incorrect-question-item .question-number {
+            font-weight: bold;
+            color: #555;
+        }
+        .incorrect-question-item .question-text-display {
+            font-style: italic;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .incorrect-question-item .user-answer-display {
+            color: #dc3545; /* Красный цвет */
+        }
+        .incorrect-question-item .correct-answer-display {
+            color: #28a745; /* Зеленый цвет */
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <h1>Knowledge Assessment Report</h1>
+        
+        <div id="participantInfo" style="padding-bottom: 15px; margin-bottom:15px; border-bottom: 1px solid #eee;">
+            <div class="participant-details">
+                <p><strong>Full Name:</strong> <span id="resultFullName"></span></p>
+                <p><strong>Company Name:</strong> <span id="resultCompanyName"></span></p>
+                <p><strong>Position:</strong> <span id="resultPosition"></span></p>
+                <p><strong>Assessment Name:</strong> <span id="resultAssessmentName"></span></p>
+                <p><strong>Date of Assessment:</strong> <span id="resultDate"></span></p>
+            </div>
+        </div>
+        
+        <div id="summaryInfo">
+            <h2>Assessment Summary</h2>
+            <div class="summary-details">
+                <p><strong>Total Questions in Exam:</strong> <span id="resultTotalQuestionsInExam"></span></p>
+                <p><strong>Questions Answered/Evaluated:</strong> <span id="resultAttemptedQuestions"></span></p>
+                <p><strong>Correct Answers:</strong> <span id="resultCorrectAnswers"></span></p>
+            </div>
+            <div class="score-section">
+                <span class="score-percent">Score: <span id="resultPercent"></span>%</span>
+                <p id="passFailMessage" class="pass-fail-message"></p>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="downloadCSVReport()" class="csv-button">Download Detailed Report (CSV)</button>
+            <button onclick="window.location.href='index.html';">Start New Assessment</button> 
+        </div>
+        <hr>
+        <div id="incorrectAnswersSection">
+            <h2>Review Incorrect Answers</h2>
+            </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Получаем данные участника
+            const fullName = sessionStorage.getItem('participantFullName');
+            const assessmentName = sessionStorage.getItem('assessmentName');
+            const companyName = sessionStorage.getItem('companyName');
+            const position = sessionStorage.getItem('participantPosition');
+            const assessmentDate = sessionStorage.getItem('assessmentDate');
+
+            // Получаем результаты теста
+            const percent = sessionStorage.getItem('examScorePercent');
+            const correctAnswers = sessionStorage.getItem('examCorrectAnswers');
+            const attemptedQuestions = sessionStorage.getItem('examAttemptedQuestions');
+            const totalQuestionsInExam = sessionStorage.getItem('examTotalQuestionsInExam');
+            
+            const reportContainer = document.querySelector('.report-container');
+            const actionButtons = document.querySelector('.action-buttons');
+
+            if (fullName && percent !== null && correctAnswers !== null && attemptedQuestions !== null && totalQuestionsInExam !== null) {
+                document.getElementById('resultFullName').textContent = fullName || 'N/A';
+                document.getElementById('resultAssessmentName').textContent = assessmentName || 'N/A';
+                document.getElementById('resultCompanyName').textContent = companyName || 'N/A';
+                document.getElementById('resultPosition').textContent = position || 'N/A';
+                document.getElementById('resultDate').textContent = assessmentDate || 'N/A';
+
+                document.getElementById('resultTotalQuestionsInExam').textContent = totalQuestionsInExam || 'N/A';
+                document.getElementById('resultAttemptedQuestions').textContent = attemptedQuestions || 'N/A';
+                document.getElementById('resultCorrectAnswers').textContent = correctAnswers || 'N/A';
+                document.getElementById('resultPercent').textContent = parseFloat(percent).toFixed(2);
+
+                const passMark = 75.00;
+                const passFailMessageEl = document.getElementById('passFailMessage');
+                if (parseFloat(percent) >= passMark) {
+                    passFailMessageEl.textContent = "Passed";
+                    passFailMessageEl.className = "pass-fail-message passed";
+                } else {
+                    passFailMessageEl.textContent = "Failed";
+                    passFailMessageEl.className = "pass-fail-message failed";
+                }
+
+                // 2. Отображение неправильно отвеченных вопросов
+                const incorrectAnswersContainer = document.getElementById('incorrectAnswersSection');
+                const detailedAnswersJson = sessionStorage.getItem('detailedExamAnswers');
+                let detailedAnswers = [];
+                if (detailedAnswersJson) {
+                    try {
+                        detailedAnswers = JSON.parse(detailedAnswersJson);
+                    } catch (e) {
+                        console.error("Error parsing detailed answers from sessionStorage:", e);
+                        const errorP = document.createElement('p');
+                        errorP.textContent = 'Could not load detailed review of incorrect answers due to a data error.';
+                        errorP.style.color = 'red';
+                        errorP.style.textAlign = 'center';
+                        if (incorrectAnswersContainer) incorrectAnswersContainer.appendChild(errorP);
+                    }
+                }
+
+                const incorrectOnlyAnswers = detailedAnswers.filter(answer => !answer.isCorrect);
+
+                if (incorrectAnswersContainer) {
+                    const incorrectTitleEl = incorrectAnswersContainer.querySelector('h2');
+                    if (incorrectOnlyAnswers.length > 0) {
+                        if (incorrectTitleEl) incorrectTitleEl.style.display = 'block'; // Показываем заголовок
+                        incorrectOnlyAnswers.forEach(answer => {
+                            const questionDiv = document.createElement('div');
+                            questionDiv.classList.add('incorrect-question-item');
+                            
+                            let userAnswerDisplay = answer.userAnswer;
+                            if (userAnswerDisplay === "" || userAnswerDisplay === "Не отвечено" || userAnswerDisplay === "Not answered") {
+                                userAnswerDisplay = "Not answered";
+                            }
+
+                            questionDiv.innerHTML = `
+                                <p class="question-number">Question ${answer.questionNumber}:</p>
+                                <p class="question-text-display">${answer.questionText}</p>
+                                <p><strong class="user-answer-display">Your Answer:</strong> <span class="user-answer-display">${userAnswerDisplay}</span></p>
+                                <p><strong class="correct-answer-display">Correct Answer:</strong> <span class="correct-answer-display">${answer.correctAnswer}</span></p>
+                            `;
+                            incorrectAnswersContainer.appendChild(questionDiv);
+                        });
+                    } else {
+                        if (incorrectTitleEl) incorrectTitleEl.style.display = 'none'; // Скрываем заголовок, если нет неправильных ответов
+                        
+                        const noIncorrectMsg = document.createElement('p');
+                        noIncorrectMsg.textContent = 'Congratulations! All questions were answered correctly, or no questions requiring review.';
+                        noIncorrectMsg.style.textAlign = 'center';
+                        noIncorrectMsg.style.marginTop = '10px';
+                        incorrectAnswersContainer.appendChild(noIncorrectMsg);
+                    }
+                }
+
+            } else {
+                if (reportContainer) {
+                     reportContainer.innerHTML = "<h1 class='error-message'>Error: Results data not found.</h1><p style='text-align:center;'><a href='index.html'>Please start the assessment again.</a></p>";
+                }
+                if (actionButtons) actionButtons.style.display = 'none';
+            }
+        };
+
+        function escapeCSVField(field) {
+            if (field === null || field === undefined) {
+                return "";
+            }
+            let stringField = String(field);
+            // Экранируем кавычки и оборачиваем поле в кавычки, если оно содержит запятые, кавычки или переносы строк
+            if (stringField.search(/("|,|\n|\r)/g) >= 0) {
+                stringField = '"' + stringField.replace(/"/g, '""') + '"';
+            }
+            return stringField;
+        }
+
+        function downloadCSVReport() {
+            const fullName = sessionStorage.getItem('participantFullName') || "N_A";
+            const assessmentName = sessionStorage.getItem('assessmentName') || "N_A";
+            const companyName = sessionStorage.getItem('companyName') || "N_A";
+            const position = sessionStorage.getItem('participantPosition') || "N_A";
+            const assessmentDate = sessionStorage.getItem('assessmentDate') || "N_A";
+            const percent = sessionStorage.getItem('examScorePercent') || "0";
+            const correctAnswers = sessionStorage.getItem('examCorrectAnswers') || "0";
+            const attemptedQuestions = sessionStorage.getItem('examAttemptedQuestions') || "0";
+            const totalQuestionsInExam = sessionStorage.getItem('examTotalQuestionsInExam') || "0";
+            
+            const detailedAnswersJson = sessionStorage.getItem('detailedExamAnswers');
+            let detailedAnswers = [];
+            if (detailedAnswersJson) {
+                try {
+                    detailedAnswers = JSON.parse(detailedAnswersJson);
+                } catch (e) {
+                    console.error("Error parsing detailed answers for CSV:", e);
+                    alert("Could not generate detailed report due to data error.");
+                    return;
+                }
+            }
+
+            let csvContent = "\uFEFF"; // BOM for Excel
+            
+            csvContent += "Participant Full Name:," + escapeCSVField(fullName) + "\r\n";
+            csvContent += "Company Name:," + escapeCSVField(companyName) + "\r\n";
+            csvContent += "Position:," + escapeCSVField(position) + "\r\n";
+            csvContent += "Assessment Name:," + escapeCSVField(assessmentName) + "\r\n";
+            csvContent += "Date of Assessment:," + escapeCSVField(assessmentDate) + "\r\n";
+            csvContent += "\r\n"; 
+
+            csvContent += "Overall Score (%):," + escapeCSVField(parseFloat(percent).toFixed(2)) + "\r\n";
+            const passStatus = parseFloat(percent) >= 75 ? "Passed" : "Failed";
+            csvContent += "Status:," + escapeCSVField(passStatus) + "\r\n";
+            csvContent += "Correct Answers:," + escapeCSVField(correctAnswers) + "\r\n";
+            csvContent += "Questions Answered/Evaluated:," + escapeCSVField(attemptedQuestions) + "\r\n";
+            csvContent += "Total Questions in Exam:," + escapeCSVField(totalQuestionsInExam) + "\r\n";
+            csvContent += "\r\n"; 
+
+            const headers = ["#", "Question Text", "User's Answer", "Correct Answer", "Result"];
+            csvContent += headers.map(header => escapeCSVField(header)).join(",") + "\r\n";
+
+            detailedAnswers.forEach(answer => {
+                const row = [
+                    escapeCSVField(answer.questionNumber),
+                    escapeCSVField(answer.questionText),
+                    escapeCSVField(answer.userAnswer),
+                    escapeCSVField(answer.correctAnswer),
+                    escapeCSVField(answer.isCorrect ? "Correct" : "Incorrect")
+                ];
+                csvContent += row.join(",") + "\r\n";
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) { 
+                const url = URL.createObjectURL(blob);
+                const filenameSafeName = fullName.replace(/[^a-z0-9_\-\.]/gi, '_').substring(0, 50) || "participant";
+                const assessmentFilenamePart = assessmentName.replace(/[^a-z0-9_\-\.]/gi, '_').substring(0, 30) || "assessment";
+                const datePart = assessmentDate.replace(/\./g, '-');
+                link.setAttribute("href", url);
+                link.setAttribute("download", `report_${filenameSafeName}_${assessmentFilenamePart}_${datePart}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert("CSV download is not supported by your browser.");
+            }
+        }
+    </script>
+</body>
+</html>
